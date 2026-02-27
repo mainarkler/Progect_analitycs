@@ -1,0 +1,15 @@
+[Unit]
+Description=Analytics Refactor Web Service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/analytics_refactor
+EnvironmentFile=/opt/analytics_refactor/.env
+ExecStart=/opt/analytics_refactor/.venv/bin/uvicorn analytics_refactor.presentation.web:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

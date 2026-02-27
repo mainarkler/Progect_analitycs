@@ -2,88 +2,48 @@
 
 A clean-architecture Python 3.11+ scaffold for a financial analytics platform that can be attached to Streamlit, FastAPI, Django, or other adapters later.
 
-## Goals
+## What is ready for external users
 
-- Split responsibilities into layers.
-- Keep domain logic framework-agnostic.
-- Make external integrations replaceable.
-- Improve testability and maintainability.
+- Browser UI at `/` for manual calculations.
+- Public JSON API at `/api/v1/calculate`.
+- Health endpoint at `/health`.
+- Local run, Docker run, and production deployment templates (systemd + Nginx).
 
 ## Layering
 
-- `presentation/` — adapter entry points (CLI and web app)
+- `presentation/` — adapter entry points (CLI + FastAPI web)
 - `application/` — use-case orchestration and dependency wiring
 - `domain/` — pure business formulas and domain errors
 - `infrastructure/` — HTTP clients, runtime config, logging
 - `schemas/` — Pydantic DTOs for I/O contracts
 - `tests/` — unit tests for domain/application behavior
 
-## Project Structure
-
-```text
-analytics_refactor/
-  .env.template
-  Makefile
-  README.md
-  pyproject.toml
-  requirements.txt
-  analytics_refactor/
-    presentation/
-      cli.py
-      web.py
-      templates/
-        index.html
-      static/
-        styles.css
-    application/
-      container.py
-      interfaces/
-        market_data.py
-      services/
-        sell_stress_service.py
-        vm_calculation_service.py
-    domain/
-      errors.py
-      calculations/
-        sell_stress.py
-        vm.py
-    infrastructure/
-      config.py
-      errors.py
-      logging_setup.py
-      clients/
-        moex_client.py
-    schemas/
-      dtos.py
-    tests/
-      unit/
-        domain/
-          test_vm_calculator.py
-```
-
-## Quick Start For External Users
+## Quick Start (external users)
 
 ```bash
 git clone <your-repo-url>
 cd Progect_analitycs/analytics_refactor
-python3.11 -m venv .venv
+make bootstrap
 source .venv/bin/activate
-make install
-```
-
-### CLI demo
-
-```bash
-make run
-```
-
-### Public web app (FastAPI)
-
-```bash
 make run-web
 ```
 
 Open in browser: <http://localhost:8000>
+
+## API usage example
+
+```bash
+curl -X POST http://localhost:8000/api/v1/calculate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notional": 1000000,
+    "shock_pct": 0.12,
+    "contracts": 5,
+    "price_open": 101.2,
+    "price_current": 99.8,
+    "lot_size": 10
+  }'
+```
 
 ## Configuration
 
@@ -93,23 +53,42 @@ Copy `.env.template` to `.env` and adjust values:
 - HTTP timeout/retry controls
 - app environment and log level
 
-## Error Handling Strategy
+## Make targets
+
+- `make bootstrap` — create venv, install deps, prepare `.env`.
+- `make run` — CLI demo.
+- `make run-web` — local web app with auto-reload.
+- `make run-prod` — production-like web app run.
+- `make test` — run unit tests.
+- `make docker-up` / `make docker-down` — containerized run.
+
+## Docker
+
+```bash
+cp .env.template .env
+docker compose up --build -d
+```
+
+## Deploy on Linux VM (template)
+
+1. Copy project to `/opt/analytics_refactor`.
+2. Run bootstrap and ensure `.venv` + `.env` exist.
+3. Install `deploy/systemd/analytics-refactor.service` to `/etc/systemd/system/`.
+4. Enable and start service:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable analytics-refactor
+   sudo systemctl start analytics-refactor
+   ```
+5. Configure Nginx using `deploy/nginx/analytics-refactor.conf` and add TLS (Let's Encrypt).
+
+## Error handling strategy
 
 - `domain.errors` for business rule failures.
 - `infrastructure.errors` for network/provider failures.
-- Presentation layer maps errors to user-facing responses.
+- Presentation layer maps errors to user-facing messages and API responses.
 
-## Dependency Injection
+## Migration path
 
-Manual DI in `application/container.py` wires services and infrastructure adapters in one place.
-
-## Test
-
-```bash
-make test
-```
-
-## Migration Path
-
-- **To Streamlit:** build `presentation/streamlit_app.py`, inject `build_container()`, call services from callbacks.
-- **To FastAPI/Django:** current `presentation/web.py` is already a FastAPI adapter; you can split routes further by domain.
+- **To Streamlit:** create `presentation/streamlit_app.py`, inject `build_container()`, call services.
+- **To FastAPI/Django:** this repo already includes FastAPI adapter; split routes by domain when needed.
