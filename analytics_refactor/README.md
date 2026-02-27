@@ -11,7 +11,7 @@ A clean-architecture Python 3.11+ scaffold for a financial analytics platform th
 
 ## Layering
 
-- `presentation/` — adapter entry points (CLI today, Streamlit/FastAPI later)
+- `presentation/` — adapter entry points (CLI and web app)
 - `application/` — use-case orchestration and dependency wiring
 - `domain/` — pure business formulas and domain errors
 - `infrastructure/` — HTTP clients, runtime config, logging
@@ -28,63 +28,80 @@ analytics_refactor/
   pyproject.toml
   requirements.txt
   analytics_refactor/
-    __init__.py
     presentation/
-      __init__.py
       cli.py
+      web.py
+      templates/
+        index.html
+      static/
+        styles.css
     application/
-      __init__.py
       container.py
       interfaces/
-        __init__.py
         market_data.py
       services/
-        __init__.py
         sell_stress_service.py
         vm_calculation_service.py
     domain/
-      __init__.py
       errors.py
       calculations/
-        __init__.py
         sell_stress.py
         vm.py
     infrastructure/
-      __init__.py
       config.py
       errors.py
       logging_setup.py
       clients/
-        __init__.py
         moex_client.py
     schemas/
-      __init__.py
       dtos.py
     tests/
-      __init__.py
       unit/
-        __init__.py
         domain/
-          __init__.py
           test_vm_calculator.py
 ```
+
+## Quick Start For External Users
+
+```bash
+git clone <your-repo-url>
+cd Progect_analitycs/analytics_refactor
+python3.11 -m venv .venv
+source .venv/bin/activate
+make install
+```
+
+### CLI demo
+
+```bash
+make run
+```
+
+### Public web app (FastAPI)
+
+```bash
+make run-web
+```
+
+Open in browser: <http://localhost:8000>
+
+## Configuration
+
+Copy `.env.template` to `.env` and adjust values:
+
+- API hosts (`MOEX_BASE_URL`, `CBR_BASE_URL`)
+- HTTP timeout/retry controls
+- app environment and log level
 
 ## Error Handling Strategy
 
 - `domain.errors` for business rule failures.
 - `infrastructure.errors` for network/provider failures.
-- Application layer orchestrates and can map errors to whichever adapter is used later.
+- Presentation layer maps errors to user-facing responses.
 
 ## Dependency Injection
 
 Manual DI in `application/container.py` wires services and infrastructure adapters in one place.
-
-## Run
-
-```bash
-make install
-make run
-```
 
 ## Test
 
@@ -95,4 +112,4 @@ make test
 ## Migration Path
 
 - **To Streamlit:** build `presentation/streamlit_app.py`, inject `build_container()`, call services from callbacks.
-- **To FastAPI/Django:** create endpoint/controller adapters that validate input -> DTO -> service -> DTO -> response.
+- **To FastAPI/Django:** current `presentation/web.py` is already a FastAPI adapter; you can split routes further by domain.
