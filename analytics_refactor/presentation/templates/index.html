@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Analytics Refactor</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Analytics Refactor Web</h1>
+      <p>Public calculator demo for sell stress and variation margin.</p>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/calculate" class="card">
+        <h2>Sell Stress Input</h2>
+        <label>Notional <input type="number" step="0.01" name="notional" value="1000000" required /></label>
+        <label>Shock (0..1) <input type="number" step="0.01" min="0" max="1" name="shock_pct" value="0.12" required /></label>
+
+        <h2>Variation Margin Input</h2>
+        <label>Contracts <input type="number" step="1" name="contracts" value="5" required /></label>
+        <label>Price Open <input type="number" step="0.01" name="price_open" value="101.2" required /></label>
+        <label>Price Current <input type="number" step="0.01" name="price_current" value="99.8" required /></label>
+        <label>Lot Size <input type="number" step="0.01" name="lot_size" value="10" required /></label>
+
+        <button type="submit">Calculate</button>
+      </form>
+
+      {% if sell_stress_result %}
+      <section class="card result">
+        <h3>Sell Stress Result</h3>
+        <pre>{{ sell_stress_result }}</pre>
+      </section>
+      {% endif %}
+
+      {% if vm_result %}
+      <section class="card result">
+        <h3>Variation Margin Result</h3>
+        <pre>{{ vm_result }}</pre>
+      </section>
+      {% endif %}
+    </main>
+  </body>
+</html>
