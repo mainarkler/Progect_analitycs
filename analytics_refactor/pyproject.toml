@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "analytics-refactor"
+version = "0.1.0"
+description = "Clean architecture scaffold for a financial analytics platform"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Analytics Team" }]
+dependencies = [
+  "pydantic>=2.7.0",
+  "requests>=2.32.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2.0",
+  "ruff>=0.6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["analytics_refactor*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
